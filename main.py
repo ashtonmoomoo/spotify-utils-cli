@@ -29,18 +29,23 @@ def batch(iterable, n=1):
         yield iterable[ndx:min(ndx + n, l)]
 
 def like_unliked_songs(client, songs):
+    processed = 0
     for b in batch(songs, n=50):
         truth_array = client.current_user_saved_tracks_contains(b)
         songs_to_like = [b[i] for i in range(len(b)) if not truth_array[i]]
         if len(songs_to_like) > 0:
             client.current_user_saved_tracks_add(songs_to_like)
 
+        processed += len(b)
+        print(f'Processed {processed} / {len(songs)}')
+
+    print('Proccessing complete.')
     return songs_to_like
 
 def main():
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=SCOPES))
     songs = get_all_songs_from_albums(sp)
-    like_unliked_songs(songs)
+    like_unliked_songs(sp, songs)
 
 if __name__ == '__main__':
     main()
